@@ -1,0 +1,25 @@
+Eerste onderzoek voor eindproject virtuele producer app
+Doelgroep: jonge rappers
+3 componenten: 
+- 1 = algoritmische compositie voor het maken van de beats
+- 2 = evt ai voor het omzetten van de input in bruikbare data
+- 3 = user interface 
+
+Ik ga beginnen met het eerste component om zo snel mogelijk tot geluid te komen. Dit is de kern van de app dus is het slimste om mee te beginnen. Op deze manier is onderdeel 3 afhankelijk van onderdeel 1 in plaats van andersom. 
+
+Techniek onderdeel 1: python3
+- je kan een app maken met python
+- python wordt aangeraden voor het maken van algoritmische composities 
+
+Hiphop beats hebben de volgende muzikale parameters:
+tempo
+ritme en groove
+drum geluiden
+sampling
+baslijnen
+synthesizers en instrumentatie
+structuur en arangement
+effecten en productie technieken
+dynamiek en structuur 
+
+ik ga een python script maken die drumbeats maakt op basis van 3 parameters: tempo, ritme en drum geluiden.
