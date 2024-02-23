@@ -9,7 +9,7 @@ from midiutil import MIDIFile
 
 ########## section for variables ###########
 
-#patterns, a 1 equals a trigger and a 0 equals a silence. 16th notes
+#patterns, a 1 equals a trigger and a 0 equals a silence. 16th notes, 1 measure
 kick_pattern = [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0] 
 snare_pattern = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] 
 hihat_pattern = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
@@ -24,7 +24,9 @@ bpm = 80
 def event_maker(t_stamp, instrument, durations, midinote, intensities):
     event_list = []
     for x in range(len(t_stamp)):
-           event_list.append({'timestamp': t_stamp[x], 'duration': durations[x], 'instrument': instrument, 'midinote': midinote, 'intensities': intensities})
+           event_list.append({'instrument': instrument, 'timestamp': t_stamp[x], 'duration': durations[x], 'midinote': midinote, 'intensities': intensities[x]})
+    
+    event_list.reverse()
     return event_list
 
 #function for making a timestamp sequence according to the patterns
@@ -55,7 +57,8 @@ def pattern_to_intensity(pattern):
 #section for converting ts to durations so i can export to midi later on 
 def ts_to_dur(ts_list, bpm):
     # Correctly calculate measure length in milliseconds for a 4/4 measure
-    measure_length_ms = (60000 / bpm) * 4
+    notedur = 60000/(bpm*4) #duration of a 16th note
+    measure_length_ms = notedur * 16 #duration of a measure 
     dur_list = []
     ts_list.reverse()
     
@@ -64,10 +67,10 @@ def ts_to_dur(ts_list, bpm):
         dur_list.append(dur_note)
     
     # Correctly calculate the duration of the last note based on the measure length in milliseconds
-    last_note_duration = measure_length_ms - ts_list[-1]
+    last_note_duration = measure_length_ms - ts_list[0]
     dur_list.append(last_note_duration)
-    
     dur_list.reverse()
+    
     return dur_list
 
 
@@ -97,6 +100,18 @@ hihat_intensities = pattern_to_intensity(hihat_pattern)
 print("kick intesities:", kick_intensities)
 print("snare intesities:", snare_intensities)
 print("hihat intesities:", hihat_intensities)
+
+kick_events = event_maker(kick_ts, "kick", kick_dur, 40, kick_intensities)
+snare_events = event_maker(snare_ts, "snare", snare_dur, 44, snare_intensities)
+hihat_events = event_maker(hihat_ts, "hihat", hihat_dur, 48, hihat_intensities)
+
+print("kick events:", kick_events)
+print("snare events:", snare_events)
+print("hihat events:", hihat_events)
+
+#adding all the events together and sorting them in the right order according to the timestamp value
+all_events = kick_events + snare_events + hihat_events
+all_events = sorted(all_events, key=lambda x: x['timestamp'])
 
 
 # ########## section for playback ###########  
