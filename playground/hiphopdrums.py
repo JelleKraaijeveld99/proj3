@@ -6,6 +6,8 @@ from midiutil import MIDIFile
 ########## TODO ##########
 # - GIVE INTENSITY MORE MEANING
 # - GIVE DURATION MORE MEANING 
+# - ADD SWING
+# - BETERE PLAYBACK -> NU KLOPT TIME NIET HELEMAAL
 
 ########## section for variables ###########
 
@@ -14,6 +16,13 @@ kick_pattern = [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0]
 snare_pattern = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] 
 hihat_pattern = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
 
+#samples:
+kick = sa.WaveObject.from_wave_file("../samples/kick/kick1.wav")
+snare = sa.WaveObject.from_wave_file("../samples/snare/snare1.wav")
+hihat = sa.WaveObject.from_wave_file("../samples/hihat/hihat1.wav")
+
+instruments = kick, snare, hihat
+
 #samples
 bpm = 80
 
@@ -21,38 +30,41 @@ bpm = 80
 
 # def apply_swing(notes, swing_amount):
 #function for making events according to the timestamps and a random instrument from the instrument list, also give the instruments a midinote value for exporting midi
-def event_maker(t_stamp, instrument, durations, midinote, intensities):
+def event_maker(t_stamp, instrument, durations, midinote, intensities, sample):
     event_list = []
     for x in range(len(t_stamp)):
-           event_list.append({'instrument': instrument, 'timestamp': t_stamp[x], 'duration': durations[x], 'midinote': midinote, 'intensities': intensities[x]})
+           event_list.append({'instrument': instrument, 'timestamp': t_stamp[x], 'duration': durations[x], 'midinote': midinote, 'intensities': intensities[x], 'sample': sample})
     
     event_list.reverse()
     return event_list
 
-#function for making a timestamp sequence according to the patterns
-def pattern_to_timestamps(pattern):
+def pattern_to_timestamps(pattern, measures):
     ts_list = [] # empty list to store the timestamps
-    notedur = 60000/(bpm*4) #duration of a 16th note
-
-    for x in range(len(pattern)):
-        if pattern[x] == 1:
-            ts_list.append(notedur*x)
+    notedur = 60000 / (bpm * 4) # duration of a 16th note
+    pattern_length = len(pattern)
+    
+    for measure in range(measures):
+        for note_index in range(pattern_length):
+            if pattern[note_index] == 1:
+                # Calculate timestamp by adding the current measure's start time
+                ts = (measure * pattern_length * notedur) + (note_index * notedur)
+                ts_list.append(ts)
 
     return ts_list
 
 
-#function for making a intensity sequence, its random now but that might change in the future
-def pattern_to_intensity(pattern):
+def pattern_to_intensity(pattern, measures):
     intensity_list = []
-    #these values could be matched to rapper slang
     inensity_min = 0.6 
     intensity_max = 0.8
 
-    for x in range(len(pattern)):
-        if pattern[x] == 1:
-            intensity_list.append(round(random.uniform(inensity_min, intensity_max), 2))
+    for _ in range(measures):
+        for x in range(len(pattern)):
+            if pattern[x] == 1:
+                intensity_list.append(round(random.uniform(inensity_min, intensity_max), 2))
 
     return intensity_list
+
 
 #section for converting ts to durations so i can export to midi later on 
 def ts_to_dur(ts_list, bpm):
@@ -77,9 +89,9 @@ def ts_to_dur(ts_list, bpm):
 
 ########## section for running the code ##########
 
-kick_ts = pattern_to_timestamps(kick_pattern)
-snare_ts = pattern_to_timestamps(snare_pattern)
-hihat_ts = pattern_to_timestamps(hihat_pattern)
+kick_ts = pattern_to_timestamps(kick_pattern,4)
+snare_ts = pattern_to_timestamps(snare_pattern,4)
+hihat_ts = pattern_to_timestamps(hihat_pattern,4)
 
 print("kick timestamps:", kick_ts)
 print("snare timestamps:", snare_ts)
@@ -93,17 +105,17 @@ print("kick durations:", kick_dur)
 print("snare durations:", snare_dur)
 print("hihat durations:", hihat_dur)
 
-kick_intensities = pattern_to_intensity(kick_pattern)
-snare_intensities = pattern_to_intensity(snare_pattern)
-hihat_intensities = pattern_to_intensity(hihat_pattern)
+kick_intensities = pattern_to_intensity(kick_pattern,4)
+snare_intensities = pattern_to_intensity(snare_pattern,4)
+hihat_intensities = pattern_to_intensity(hihat_pattern,4)
 
 print("kick intesities:", kick_intensities)
 print("snare intesities:", snare_intensities)
 print("hihat intesities:", hihat_intensities)
 
-kick_events = event_maker(kick_ts, "kick", kick_dur, 40, kick_intensities)
-snare_events = event_maker(snare_ts, "snare", snare_dur, 44, snare_intensities)
-hihat_events = event_maker(hihat_ts, "hihat", hihat_dur, 48, hihat_intensities)
+kick_events = event_maker(kick_ts, "kick", kick_dur, 40, kick_intensities, kick)
+snare_events = event_maker(snare_ts, "snare", snare_dur, 44, snare_intensities, snare)
+hihat_events = event_maker(hihat_ts, "hihat", hihat_dur, 48, hihat_intensities, hihat)
 
 print("kick events:", kick_events)
 print("snare events:", snare_events)
@@ -112,33 +124,34 @@ print("hihat events:", hihat_events)
 #adding all the events together and sorting them in the right order according to the timestamp value
 all_events = kick_events + snare_events + hihat_events
 all_events = sorted(all_events, key=lambda x: x['timestamp'])
+print(all_events)
 
 
-# ########## section for playback ###########  
+########## section for playback ###########  
 
-# #copy the eventlist so i can still use the events if the user wants to output MIDI
-# all_events_buffer = list(all_events)
-# #section of the code for the audio playback
-# start_time = time.time()
+#copy the eventlist so i can still use the events if the user wants to output MIDI
+all_events_buffer = list(all_events)
+#section of the code for the audio playback
+start_time_ms = time.time() * 1000
 
-# #var for popping an event from the event_list
-# event = all_events.pop(0)
+#var for popping an event from the event_list
+event = all_events.pop(0)
 
-# #while loop for playing the sequence 
-# while True:
-#     #var for storing current time 
-#     current_time = time.time()
-#     #check if the event has to be played
-#     if(current_time - start_time >= event['timestamp']):
-#         event['sample'].play()
-#         #replace the event var with the next event in the list and check if there are events left in the event_list
-#         if(all_events):
-#             event = all_events.pop(0)
-#         #if there are no events left in the list break the loop
-#         else:
-#             break
+#while loop for playing the sequence 
+while True:
+    #var for storing current time 
+    current_time_ms = time.time() * 1000
+    #check if the event has to be played
+    if(current_time_ms - start_time_ms >= event['timestamp']):
+        event['sample'].play()
+        #replace the event var with the next event in the list and check if there are events left in the event_list
+        if(all_events):
+            event = all_events.pop(0)
+        #if there are no events left in the list break the loop
+        else:
+            break
 
-#     else:
-#         time.sleep(0.001)    
+    else:
+        time.sleep(0.001)    
 
-#     time.sleep(1)
+time.sleep(1)
