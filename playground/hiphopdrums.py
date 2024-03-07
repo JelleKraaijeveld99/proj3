@@ -1,6 +1,7 @@
 import simpleaudio as sa 
 import time as time 
 import random 
+import pygame
 from midiutil import MIDIFile
 
 ########## TODO ##########
@@ -8,6 +9,16 @@ from midiutil import MIDIFile
 # - GIVE DURATION MORE MEANING 
 # - ADD SWING
 # - BETERE PLAYBACK -> NU KLOPT TIME NIET HELEMAAL
+# DOORNBURG
+#PYGAME
+#MUTEX -> Lock
+#PYTHON -> APP
+
+######### section for initialisation ##########
+# time section
+pygame.init()
+# Initialize Pygame clock
+clock = pygame.time.Clock()
 
 ########## section for variables ###########
 
@@ -15,6 +26,8 @@ from midiutil import MIDIFile
 kick_pattern = [1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0] 
 snare_pattern = [0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0] 
 hihat_pattern = [1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0]
+
+#dictionaries 
 
 #samples:
 kick = sa.WaveObject.from_wave_file("../samples/kick/kick1.wav")
@@ -128,11 +141,10 @@ print(all_events)
 
 
 ########## section for playback ###########  
-
 #copy the eventlist so i can still use the events if the user wants to output MIDI
 all_events_buffer = list(all_events)
 #section of the code for the audio playback
-start_time_ms = time.time() * 1000
+start_time_ms = pygame.time.get_ticks()
 
 #var for popping an event from the event_list
 event = all_events.pop(0)
@@ -140,7 +152,7 @@ event = all_events.pop(0)
 #while loop for playing the sequence 
 while True:
     #var for storing current time 
-    current_time_ms = time.time() * 1000
+    current_time_ms = pygame.time.get_ticks()
     #check if the event has to be played
     if(current_time_ms - start_time_ms >= event['timestamp']):
         event['sample'].play()
@@ -152,6 +164,6 @@ while True:
             break
 
     else:
-        time.sleep(0.001)    
+        pygame.time.wait(1)
 
-time.sleep(1)
+pygame.time.wait(1000)
