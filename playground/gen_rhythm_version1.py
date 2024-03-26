@@ -15,6 +15,9 @@ generated_rhythm = []
 
 grid_prob_percentages = []
 
+padnaam = "/Users/jellekraaijeveld/Documents/HKU1/Jaar_3/proj3/midi_data/test_grooves/3_hiphop_90_beat_4-4_1.midi"
+midinote = 42
+
 ####### FUNCTIONS ########
 def input_rhythms(rhythm_amnt, note_amnt): #FUNCTION FOR GENERATING FAKE INPUT RHYTHMS
     all_rhythms = []
@@ -41,7 +44,7 @@ def calc_grid_probabilty(note_amnt, input_rhythms): #FUNCTION FOR CALCULATING TH
         on_list.append(percentage)
     return on_list
  
-def new_rhythm(rhythm_percentages):
+def new_rhythm(rhythm_percentages): #FUNCTION FOR GENERATING NEW RHYTHMS BASED ON THE PROBABILITY CHANCES
     rhythm = []
 
     for percentage in rhythm_percentages:
@@ -84,6 +87,19 @@ def midi_to_binary(padnaam, midi_noot): #FUNCTION FOR TRANSLATING MIDIRHYTHMS TO
 
     return grid
 
+def grid_shortener(grid, new_length): #FUNCTION FOR SHORTENING ALL THE GRIDS SO EVERYTHING IS EVENED OUT AND I HAVE USEABLE DATA
+    # Splits de array in subarrays van 'lengte_subarray'
+    subarrays = [grid[i:i + new_length] for i in range(0, len(grid), new_length)]
+    # Behoud alleen subarrays die exact 'lengte_subarray' lang zijn
+    subarrays = [subarray for subarray in subarrays if len(subarray) == new_length]
+    return subarrays
+
+
+
+def rhythms_to_probabilty():#FUNCTION FOR THE PROCESSING OF ALL THE MIDIFILES TO PROBABILITY CHANCES
+    poop = 0
+    return poop 
+
 def midinotes_in_file(padnaam):
     mid = mido.MidiFile(padnaam)
     aanwezige_noten = set()  # Gebruik een set om dubbele noten te voorkomen
@@ -105,10 +121,14 @@ def midinotes_in_file(padnaam):
 
 # generated_rhythm = new_rhythm(grid_prob_percentages)
 # print(generated_rhythm)
-padnaam = "/Users/jellekraaijeveld/Documents/HKU1/Jaar_3/proj3/midi_data/test_grooves/3_hiphop_90_beat_4-4_1.midi"
-midinote = 42
+
 grid = midi_to_binary(padnaam, midinote)
 print(grid)
+
+shortend_grids = grid_shortener(grid,grid_note_amnt)
+# Print de subarrays om het resultaat te zien
+for index, shortend_grid in enumerate(shortend_grids):
+    print(f"Subarray {index+1}: {shortend_grid}")
 
 notes = midinotes_in_file(padnaam)
 print(f"Aanwezige MIDI noten: {notes}")
