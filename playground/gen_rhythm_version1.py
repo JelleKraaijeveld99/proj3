@@ -32,7 +32,7 @@ def calc_grid_probabilty(note_amnt, input_rhythms): #FUNCTION FOR CALCULATING TH
     rhythm_amnt = len(input_rhythms)
     rhythm_length = note_amnt
     on_list = []
-    print(rhythm_amnt)
+    print("rhythm amount:", rhythm_amnt)
     for x in range(rhythm_length):
         on_amount = 0
         for y in range(rhythm_amnt):
@@ -130,8 +130,12 @@ shortend_grids = grid_shortener(grid,grid_note_amnt)
 for index, shortend_grid in enumerate(shortend_grids):
     print(f"Subarray {index+1}: {shortend_grid}")
 
+grid_prob_percentages = calc_grid_probabilty(32, shortend_grids)
+print(grid_prob_percentages)
+
 notes = midinotes_in_file(padnaam)
 print(f"Aanwezige MIDI noten: {notes}")
+
 
 
 #PADNAAM: /Users/jellekraaijeveld/Documents/HKU1/Jaar_3/proj3/midi_data/test_grooves
